@@ -7,11 +7,8 @@ csro_system sysinfo;
 csro_mqtt mqttinfo;
 esp_mqtt_client_handle_t mqtt_client;
 
-void csro_system_get_info(void)
+void csro_wifi_get_info(void)
 {
-#ifdef AIRSYS
-    sprintf(sysinfo.dev_type, "airsys");
-#endif
     size_t len = 0;
     nvs_handle handle;
     nvs_open("system", NVS_READWRITE, &handle);
@@ -27,7 +24,13 @@ void csro_system_get_info(void)
     }
     nvs_commit(handle);
     nvs_close(handle);
+}
 
+void csro_system_get_info(void)
+{
+#ifdef AIRSYS
+    sprintf(sysinfo.dev_type, "airsys");
+#endif
     esp_wifi_get_mac(WIFI_MODE_STA, sysinfo.mac);
     sprintf(sysinfo.mac_str, MACSTR_FORMAT, sysinfo.mac[0], sysinfo.mac[1], sysinfo.mac[2], sysinfo.mac[3], sysinfo.mac[4], sysinfo.mac[5]);
     sprintf(sysinfo.host_name, "CSRO_%s", sysinfo.mac_str);

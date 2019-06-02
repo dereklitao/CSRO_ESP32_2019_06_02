@@ -1,11 +1,19 @@
 #ifndef CSRO_COMMON_H_
 #define CSRO_COMMON_H_
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+
 #include "esp_system.h"
 #include "esp_wifi.h"
+#include "esp_smartconfig.h"
+#include "esp_event.h"
+#include "esp_event_loop.h"
 
 #include "driver/gpio.h"
 #include "driver/uart.h"
+#include "lwip/apps/sntp.h"
 #include "nvs_flash.h"
 #include "mqtt_client.h"
 
@@ -79,6 +87,7 @@ extern csro_mqtt mqttinfo;
 extern esp_mqtt_client_handle_t mqtt_client;
 
 //common.c
+void csro_wifi_get_info(void);
 void csro_system_get_info(void);
 
 //csro_smart_config.c
