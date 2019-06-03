@@ -89,6 +89,35 @@ static bool master_ac_send_receive(uint16_t timeout)
     return master_ac.status;
 }
 
+#define GPIO_SELECTED_PIN (1ULL << LED_PIN) | (1ULL << RELAY01_PIN) | (1ULL << RELAY02_PIN) | (1ULL << RELAY11_PIN) | (1ULL << RELAY12_PIN)
+
+static void led_task(void *param)
+{
+    static bool led_status = false;
+    while (true)
+    {
+        gpio_set_level(LED_PIN, led_status);
+        led_status = !led_status;
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
+}
+
+void csro_uart1_reinit(void)
+{
+    const uart_config_t uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+
+    uart_param_config(UART_NUM_1, &uart_config);
+    uart_set_pin(UART_NUM_1, TXD1_PIN, RXD1_PIN, RTS1_PIN, UART_PIN_NO_CHANGE);
+    uart_driver_install(UART_NUM_1, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL, 0);
+    uart_set_mode(UART_NUM_1, UART_MODE_RS485_HALF_DUPLEX);
+}
+
 void csro_airsys_init(void)
 {
     const uart_config_t uart_config = {
@@ -141,6 +170,16 @@ void csro_airsys_init(void)
     xTaskCreate(modbus_ap_task, "modbus_ap_task", 2048, NULL, configMAX_PRIORITIES - 6, NULL);
     xTaskCreate(modbus_ac_task, "modbus_ac_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
     xTaskCreate(modbus_hmi_task, "modbus_hmi_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
+
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_SELECTED_PIN;
+    io_conf.pull_down_en = 0;
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+
+    xTaskCreate(led_task, "led_task", 2048, NULL, configMAX_PRIORITIES - 5, NULL);
 }
 
 void csro_update_airsys_state(void)

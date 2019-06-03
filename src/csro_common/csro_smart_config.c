@@ -48,7 +48,6 @@ static void test_task(void *pvParameters)
     while (true)
     {
         vTaskDelay(1000 / portTICK_RATE_MS);
-        printf("Hello. I am running.\r\n");
     }
     vTaskDelete(NULL);
 }

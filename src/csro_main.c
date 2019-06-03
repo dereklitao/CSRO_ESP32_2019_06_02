@@ -12,8 +12,6 @@ void app_main()
     nvs_commit(handle);
     nvs_close(handle);
 
-    csro_device_init();
-
     if (sysinfo.router_flag == 1)
     {
         csro_start_mqtt();
@@ -22,5 +20,5 @@ void app_main()
     {
         csro_start_smart_config();
     }
-    printf("\r\n=====%d Start OK!=====\r\n", sysinfo.power_cnt + 1);
+    csro_device_init();
 }

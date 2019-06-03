@@ -38,5 +38,4 @@ void csro_system_get_info(void)
     sprintf(mqttinfo.id, "csro/%s", sysinfo.mac_str);
     sprintf(mqttinfo.name, "csro/%s/%s", sysinfo.mac_str, sysinfo.dev_type);
     sprintf(mqttinfo.pass, PASSSTR_FORMAT, sysinfo.mac[1], sysinfo.mac[3], sysinfo.mac[5], sysinfo.mac[0], sysinfo.mac[2], sysinfo.mac[4], sysinfo.mac[5], sysinfo.mac[3], sysinfo.mac[1], sysinfo.mac[4], sysinfo.mac[2], sysinfo.mac[0]);
-    printf("\r\nid = %s.\nname = %s.\npass = %s.\r\n", mqttinfo.id, mqttinfo.name, mqttinfo.pass);
 }

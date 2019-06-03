@@ -70,14 +70,6 @@ static void mqtt_task(void *pvParameters)
 
     while (true)
     {
-        if (sysinfo.time_info.tm_year >= (2016 - 1900))
-        {
-            printf("Free heap: %d, time is: %s, run %d seconds\n", esp_get_free_heap_size(), sysinfo.time_str, (int)(sysinfo.time_now - sysinfo.time_start));
-        }
-        else
-        {
-            printf("Free heap size: %d\n", esp_get_free_heap_size());
-        }
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
