@@ -32,12 +32,12 @@ void modbus_hmi_task(void *param)
 {
     while (true)
     {
-        uart_write_bytes(UART_NUM_2, "UART2\r\n", 7);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-        // if (xSemaphoreTake(slave_hmi.command_sem, portMAX_DELAY) == pdTRUE)
-        // {
-        //     slave_handle_command(&slave_hmi);
-        //     slave_hmi.rx_len = 0;
-        // }
+        //uart_write_bytes(UART_NUM_2, "UART2\r\n", 7);
+        //vTaskDelay(100 / portTICK_PERIOD_MS);
+        if (xSemaphoreTake(slave_hmi.command_sem, portMAX_DELAY) == pdTRUE)
+        {
+            slave_handle_command(&slave_hmi);
+            slave_hmi.rx_len = 0;
+        }
     }
 }
