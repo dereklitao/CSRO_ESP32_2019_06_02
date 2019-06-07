@@ -1,12 +1,29 @@
 #ifndef __MB_ADDRESS_H
 #define __MB_ADDRESS_H
 
-#define AC_DISC_ALARM_STATUS_START_ADDR 1
-#define AC_DISC_ALARM_LEN 39
+#define AC_DISC_01_START 1
+#define AC_DISC_01_LEN 39
+#define AC_DISC_01_SYS_OFFSET 1
 
-#define AC_INPUT_STATUS_START_ADDR
+#define AC_COIL_01_START 1
+#define AC_COIL_01_LEN 1
+#define AC_COIL_01_SYS_OFFSET (AC_DISC_01_SYS_OFFSET + AC_DISC_01_LEN) //40
 
-#define AC_COIL_SWITCH_ADDR 1
+#define AC_INPUT_01_START 1
+#define AC_INPUT_01_LEN 20
+#define AC_INPUT_01_SYS_OFFSET 1
+
+#define AC_HOLDING_01_START 1
+#define AC_HOLDING_01_LEN 1
+#define AC_HOLDING_01_SYS_OFFSET (AC_INPUT_01_SYS_OFFSET + AC_INPUT_01_LEN) //21
+
+#define AC_HOLDING_02_START 36
+#define AC_HOLDING_02_LEN 4
+#define AC_HOLDING_02_SYS_OFFSET (AC_HOLDING_01_SYS_OFFSET + AC_HOLDING_01_LEN) //22 - 25
+
+#define AC_HOLDING_03_START 61
+#define AC_HOLDING_03_LEN 2
+#define AC_HOLDING_03_SYS_OFFSET (AC_HOLDING_02_SYS_OFFSET + AC_HOLDING_02_LEN) // 26 - 27
 
 #endif
 
@@ -75,4 +92,93 @@ AC_INPUT_STATUS--->SYS_HOLDING[1-20]
 18----主机出厂编号2
 19----主机出厂编号3
 20----主机状态
+ */
+
+/*
+AC_COIL_POWER--->SYS_COIL[40]
+1-----空调开关机
+ */
+
+/*
+AC_HOLDING_SET--->SYS_HOLDING[21-25]
+1-----制冷/制热模式切换
+36----除霜温差（OT-LPS 对应）设置点
+39----退出除霜HPS 对应温度
+61----制冷模式下设置点
+62----制热模式下设置点
+ */
+
+/*
+AP_DISC_STATUS--->SYS_COIL[101-131]
+1-----压缩机运行状态
+2-----水泵运行状态
+3-----负离子运行状态
+4-----UV运行状态
+5-----风阀1运行状态
+6-----风阀2运行状态
+7-----风阀2运行状态
+8-----外风机/加湿
+9-----除霜状态
+10----远程开关机
+11----电加热运行状态
+12----加湿运行状态
+
+17----新风湿度传感器故障
+18----新风温度传感器故障
+19----回风湿度传感器故障
+20----回风温度传感器故障
+21----内盘温度传感器故障
+22----
+23----压缩机高压故障
+24----压缩机低压故障
+25----压差保护
+26----水位开关保护
+27----管后温度传感器故障
+28----
+29----初效滤网寿命报警
+30----中效滤网寿命报警
+31----高效滤网寿命报警
+ */
+
+/*
+AP_INPUT_STATUS--->SYS_HOLDING[101-119]
+1-----运行模式
+2-----运行风速
+3-----回风湿度
+4-----回风温度
+5-----新风湿度(排风)
+6-----新风温度(排风)
+7-----内盘温度
+8-----PM25
+9-----CO2
+10----VOC
+11----初效滤网运行时间
+12----活性炭滤网运行时间
+13----高效滤网运行时间
+14----主风机转速
+15----副风机转速
+16----
+17----主板程序版本
+19----盘管后温度
+19----比例阀电压
+ */
+
+/*
+AP_HOLDING_SET--->SYS_HOLDING[121-136]
+1-----开关机
+2-----设定模式
+3-----设定回风风速
+4-----设定湿度
+5-----设定温度
+6-----
+7-----
+8-----设定机组地址
+9-----清除故障
+10-----清除滤网时间
+11----恢复厂家参数
+12----除湿卸载风机转速
+13----预留
+14----预留
+15----线控湿度
+16----线控温度
  */

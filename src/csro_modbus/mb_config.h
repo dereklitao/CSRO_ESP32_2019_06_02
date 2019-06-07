@@ -2,6 +2,7 @@
 #define __MB_CONFIG_H
 
 #include "csro_common/csro_common.h"
+#include "mb_address.h"
 
 #define MODBUS_FC_READ_COILS 0x01
 #define MODBUS_FC_READ_DISCRETE_INPUTS 0x02
@@ -50,6 +51,8 @@ typedef struct
 
     bool (*master_send_receive)(uint16_t timeout);
     SemaphoreHandle_t reply_sem;
+    SemaphoreHandle_t write_sem;
+    SemaphoreHandle_t uart_mutex;
 } modbus_master;
 
 typedef struct
@@ -77,8 +80,12 @@ extern modbus_master master_ac;
 extern modbus_slave slave_hmi;
 extern device_regs airsys_regs;
 
-void modbus_ap_task(void *param);
-void modbus_ac_task(void *param);
+void modbus_ap_read_task(void *param);
+void modbus_ap_write_task(void *param);
+
+void modbus_ac_read_task(void *param);
+void modbus_ac_write_task(void *param);
+
 void modbus_hmi_task(void *param);
 
 uint16_t crc16(uint8_t *buffer, uint16_t buffer_length);

@@ -152,8 +152,8 @@ void csro_airsys_init(void)
         slave_hmi.regs->holdings[i] = i;
     }
 
-    xTaskCreate(modbus_ap_task, "modbus_ap_task", 2048, NULL, configMAX_PRIORITIES - 6, NULL);
-    xTaskCreate(modbus_ac_task, "modbus_ac_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
+    xTaskCreate(modbus_ap_read_task, "modbus_ap_read_task", 2048, NULL, configMAX_PRIORITIES - 6, NULL);
+    xTaskCreate(modbus_ac_read_task, "modbus_ac_read_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
     xTaskCreate(modbus_hmi_task, "modbus_hmi_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
 
     gpio_config_t io_conf;
