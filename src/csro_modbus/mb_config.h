@@ -23,6 +23,19 @@
 #define MODBUS_COIL_MAX 255
 #define MODBUS_HOLDING_MAX 255
 
+#define LED_PIN (GPIO_NUM_23)
+#define RELAY01_PIN (GPIO_NUM_22)
+#define RELAY02_PIN (GPIO_NUM_21)
+#define RELAY03_PIN (GPIO_NUM_34)
+#define RELAY04_PIN (GPIO_NUM_35)
+#define RELAY05_PIN (GPIO_NUM_32)
+#define RELAY06_PIN (GPIO_NUM_33)
+#define RELAY07_PIN (GPIO_NUM_25)
+#define RELAY08_PIN (GPIO_NUM_27)
+#define RELAY10_PIN (GPIO_NUM_14)
+#define RELAY11_PIN (GPIO_NUM_12)
+#define RELAY12_PIN (GPIO_NUM_13)
+
 typedef struct
 {
     uint8_t coils[MODBUS_COIL_MAX];
@@ -87,6 +100,7 @@ void modbus_ac_read_task(void *param);
 void modbus_ac_write_task(void *param);
 
 void modbus_hmi_task(void *param);
+void modbus_relay_task(void *param);
 
 uint16_t crc16(uint8_t *buffer, uint16_t buffer_length);
 bool master_read_discs(modbus_master *master, uint8_t addr, uint8_t qty, uint8_t *result);

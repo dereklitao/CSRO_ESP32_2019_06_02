@@ -84,6 +84,8 @@ static void handle_write_single_coil(modbus_slave *slave)
         slave->tx_buf[slave->tx_len++] = 0x00;
         slave->regs->coil_flags[slave->write_addr] = true;
     }
+    xSemaphoreGive(master_ac.write_sem);
+    xSemaphoreGive(master_ap.write_sem);
 }
 
 static void handle_write_multi_coils(modbus_slave *slave)
@@ -108,6 +110,8 @@ static void handle_write_multi_coils(modbus_slave *slave)
         slave->tx_buf[slave->tx_len++] = slave->write_qty >> 8;
         slave->tx_buf[slave->tx_len++] = slave->write_qty & 0xFF;
     }
+    xSemaphoreGive(master_ac.write_sem);
+    xSemaphoreGive(master_ap.write_sem);
 }
 
 static void handle_write_single_holding_reg(modbus_slave *slave)
@@ -128,6 +132,8 @@ static void handle_write_single_holding_reg(modbus_slave *slave)
         slave->tx_buf[slave->tx_len++] = slave->regs->holdings[slave->write_addr] & 0xFF;
         slave->regs->holding_flags[slave->write_addr] = true;
     }
+    xSemaphoreGive(master_ac.write_sem);
+    xSemaphoreGive(master_ap.write_sem);
 }
 
 static void handle_write_multi_holding_regs(modbus_slave *slave)
@@ -152,6 +158,8 @@ static void handle_write_multi_holding_regs(modbus_slave *slave)
         slave->tx_buf[slave->tx_len++] = slave->write_qty >> 8;
         slave->tx_buf[slave->tx_len++] = slave->write_qty & 0xFF;
     }
+    xSemaphoreGive(master_ac.write_sem);
+    xSemaphoreGive(master_ap.write_sem);
 }
 
 static void handle_unsupport_fucntion(modbus_slave *slave)

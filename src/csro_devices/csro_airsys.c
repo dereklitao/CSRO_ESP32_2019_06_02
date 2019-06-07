@@ -12,19 +12,7 @@
 #define RXD2_PIN (GPIO_NUM_19)
 #define RTS2_PIN (GPIO_NUM_18)
 
-#define LED_PIN (GPIO_NUM_23)
-#define RELAY01_PIN (GPIO_NUM_22)
-#define RELAY02_PIN (GPIO_NUM_21)
-#define RELAY03_PIN (GPIO_NUM_34)
-#define RELAY04_PIN (GPIO_NUM_35)
-#define RELAY05_PIN (GPIO_NUM_32)
-#define RELAY06_PIN (GPIO_NUM_33)
-#define RELAY07_PIN (GPIO_NUM_25)
-#define RELAY08_PIN (GPIO_NUM_27)
-
-#define RELAY10_PIN (GPIO_NUM_14)
-#define RELAY11_PIN (GPIO_NUM_12)
-#define RELAY12_PIN (GPIO_NUM_13)
+#define GPIO_SELECTED_PIN ((1ULL << LED_PIN) | (1ULL << RELAY01_PIN) | (1ULL << RELAY02_PIN) | (1ULL << RELAY05_PIN) | (1ULL << RELAY06_PIN) | (1ULL << RELAY07_PIN) | (1ULL << RELAY08_PIN) | (1ULL << RELAY10_PIN) | (1ULL << RELAY11_PIN) | (1ULL << RELAY12_PIN))
 
 #ifdef AIRSYS
 
@@ -67,38 +55,69 @@ static void uart_receive_complete(uart_port_t uart_num)
 
 static bool master_ap_send_receive(uint16_t timeout)
 {
-    master_ap.status = false;
     master_ap.rx_len = 0;
     uart_write_bytes(master_ap.uart_num, (const char *)master_ap.tx_buf, master_ap.tx_len);
     if (xSemaphoreTake(master_ap.reply_sem, timeout / portTICK_PERIOD_MS) == pdTRUE)
     {
         master_ap.status = true;
+        airsys_regs.coils[42] = 1;
+    }
+    else
+    {
+        master_ap.status = false;
+        airsys_regs.coils[42] = 0;
     }
     return master_ap.status;
 }
 
 static bool master_ac_send_receive(uint16_t timeout)
 {
-    master_ac.status = false;
     master_ac.rx_len = 0;
     uart_write_bytes(master_ac.uart_num, (const char *)master_ac.tx_buf, master_ac.tx_len);
     if (xSemaphoreTake(master_ac.reply_sem, timeout / portTICK_PERIOD_MS) == pdTRUE)
     {
         master_ac.status = true;
+        airsys_regs.coils[41] = 1;
+    }
+    else
+    {
+        master_ac.status = false;
+        airsys_regs.coils[41] = 0;
     }
     return master_ac.status;
 }
 
-#define GPIO_SELECTED_PIN (1ULL << LED_PIN) | (1ULL << RELAY01_PIN) | (1ULL << RELAY02_PIN) | (1ULL << RELAY11_PIN) | (1ULL << RELAY12_PIN)
-
-static void led_task(void *param)
+static void led_relay_task(void *param)
 {
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_SELECTED_PIN;
+    io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf);
     static bool led_status = false;
+    static uint8_t cnt = 0;
     while (true)
     {
-        gpio_set_level(LED_PIN, led_status);
-        led_status = !led_status;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        gpio_set_level(RELAY01_PIN, airsys_regs.coils[201]);
+        gpio_set_level(RELAY02_PIN, airsys_regs.coils[202]);
+        gpio_set_level(RELAY03_PIN, airsys_regs.coils[203]);
+        gpio_set_level(RELAY04_PIN, airsys_regs.coils[204]);
+        gpio_set_level(RELAY05_PIN, airsys_regs.coils[205]);
+        gpio_set_level(RELAY06_PIN, airsys_regs.coils[206]);
+        gpio_set_level(RELAY07_PIN, airsys_regs.coils[207]);
+        gpio_set_level(RELAY08_PIN, airsys_regs.coils[208]);
+        gpio_set_level(RELAY10_PIN, airsys_regs.coils[210]);
+        gpio_set_level(RELAY11_PIN, airsys_regs.coils[211]);
+        gpio_set_level(RELAY12_PIN, airsys_regs.coils[212]);
+        cnt = (cnt + 1) % 10;
+        if (cnt == 1)
+        {
+            gpio_set_level(LED_PIN, led_status);
+            led_status = !led_status;
+        }
+        vTaskDelay(50 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
 }
@@ -135,36 +154,29 @@ void csro_airsys_init(void)
     master_ap.slave_id = 1;
     master_ap.master_send_receive = master_ap_send_receive;
     master_ap.reply_sem = xSemaphoreCreateBinary();
+    master_ap.write_sem = xSemaphoreCreateBinary();
+    master_ap.uart_mutex = xSemaphoreCreateMutex();
 
     master_ac.uart_num = UART_NUM_1;
     master_ac.slave_id = 1;
     master_ac.master_send_receive = master_ac_send_receive;
     master_ac.reply_sem = xSemaphoreCreateBinary();
+    master_ac.write_sem = xSemaphoreCreateBinary();
+    master_ac.uart_mutex = xSemaphoreCreateMutex();
 
     slave_hmi.uart_num = UART_NUM_2;
     slave_hmi.slave_id = 1;
     slave_hmi.command_sem = xSemaphoreCreateBinary();
     slave_hmi.regs = &airsys_regs;
 
-    for (size_t i = 0; i < 255; i++)
-    {
-        slave_hmi.regs->coils[i] = i % 2;
-        slave_hmi.regs->holdings[i] = i;
-    }
-
-    xTaskCreate(modbus_ap_read_task, "modbus_ap_read_task", 2048, NULL, configMAX_PRIORITIES - 6, NULL);
     xTaskCreate(modbus_ac_read_task, "modbus_ac_read_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
+    xTaskCreate(modbus_ac_write_task, "modbus_ac_write_task", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+
+    xTaskCreate(modbus_ap_read_task, "modbus_ap_read_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
+    xTaskCreate(modbus_ap_write_task, "modbus_ap_write_task", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+
     xTaskCreate(modbus_hmi_task, "modbus_hmi_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
-
-    gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = GPIO_SELECTED_PIN;
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-    gpio_config(&io_conf);
-
-    xTaskCreate(led_task, "led_task", 2048, NULL, configMAX_PRIORITIES - 5, NULL);
+    xTaskCreate(led_relay_task, "led_relay_task", 2048, NULL, configMAX_PRIORITIES - 6, NULL);
 }
 
 void csro_update_airsys_state(void)
